@@ -4,6 +4,7 @@
 #include <fstream>
 #include <cmath>
 #include <chrono>
+#include "mesh.hpp"
 
 
 
@@ -110,11 +111,11 @@ void write_smesh2(T const& x_top, T const& y_top, T const& x_bot, T const& y_bot
     //ofile << refine << " " << 0 ;
 
     for(std::size_t i = 0; i < refine; ++i){
-        ofile << index_top[i] << " "; //top polygon for a cylinder
+        ofile << index_top[i] << " "; //top polygon for cylinder
     }
     ofile << "\n" << refine << " ";
     for(std::size_t i = 0; i < refine; ++i){
-        ofile << index_bot[i] << " ";  //bottom polygon for a cylinder
+        ofile << index_bot[i] << " ";  //bottom polygon for cylinder
     }
     ofile << "\n";
 
@@ -143,22 +144,22 @@ void CylinderPLC(T radius, S height, std::size_t refine = 10){ //refine defines 
         index_top.push_back(i); //store indices of points of top polygon
         index_bot.push_back(i+refine); //store indices of points of base poiygon
     }
-    write_smesh2(x,y,x,y,index_top,index_bot,height,refine);
+    write_smesh(x,y,x,y,index_top,index_bot,height,refine);
 }
 
 
 int main(){
-    auto refine = 10;
-   // int  m = refine*(2+10); // write_smesh
+    auto refine = 100;
+    //int  m = refine*(2+10); // write_smesh
     int m = refine*2;  //write_smesh2
     auto start = std::chrono::high_resolution_clock::now();
-    CylinderPLC(4,10,refine);
+    CYLINDER_OBJECT c(5.753,15,refine); c.get_smesh();
     auto end = std::chrono::high_resolution_clock::now();
     std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count() << std::endl;
     std::ofstream ofile("c.mtr");
     ofile << m << " " << 1 <<"\n";
     for(std::size_t i = 0; i < m; ++i){
-        ofile <<  0.2 << "\n";
+        ofile <<  0.4 << "\n";
     }
 
     #if 0  //testing linspace
