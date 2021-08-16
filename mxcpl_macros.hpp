@@ -1,4 +1,4 @@
-#pragma once
+//#pragma once
 #ifndef MXCPL_MACROS_HPP
 #define MXCPL_MACROS_HPP
 

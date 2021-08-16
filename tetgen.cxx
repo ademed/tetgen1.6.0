@@ -36453,7 +36453,11 @@ void tetrahedralize(tetgenbehavior *b, tetgenio *in, tetgenio *out,
   }
 
 
-  if (!out && b->vtkview) {
+  // if (!out && b->vtkview) {
+  //   m.outmesh2vtk(NULL, 0); // b->outfilename
+  // }
+
+   if (b->vtkview) {
     m.outmesh2vtk(NULL, 0); // b->outfilename
   }
 
