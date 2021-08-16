@@ -11,6 +11,9 @@
 
 
 int main(int argc, char *argv[]){
+    CYLINDER_OBJECT a(3,5); 
+    //std::cout << a.x_cord()[0] << std::endl;
+    
         
     tetgenio in, out;
     tetgenio::facet *f;
