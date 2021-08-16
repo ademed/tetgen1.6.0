@@ -3,7 +3,10 @@
 #define MESH_HPP
 #include <vector>
 #include <fstream>
+#include <type_traits>
+#include <iostream>
 #include "mxcpl_macros.hpp"
+#include "tetgen.h"
 
 
 using vector_d      =  typename std::vector<double>;
@@ -15,6 +18,7 @@ using u_int         =  std::size_t;
 _MXCPL_MESH_BEGIN
     template<typename T>
     constexpr T PI{ 3.14159265358979323846264338327950288419716939937510582};
+    enum OBJECTS{CYLINDER = 1, RECTANGLE = 2};
 
     constexpr void linspace(int npoints, double first, double last, vector_d& res);
 
@@ -23,20 +27,57 @@ _MXCPL_MESH_BEGIN
         public:
             Cylinder(T _radius, S _height, u_int nPoints = 10): 
                     mRadius(_radius), mHeight(_height), mNumber_of_points(nPoints){create();}
-            void get_smesh(){ write_smesh();}
+            Cylinder(Cylinder const& rhs): 
+                mRadius(rhs.mRadius), mHeight(rhs.mHeight), mNumber_of_points(rhs.mNumber_of_points){create();}
+            void get_smesh(const char* filename){ write_smesh(filename);}
+            auto type(){return CYLINDER;}
+            vector_d::pointer x_cord(){return mX.data();}
+            vector_d::pointer y_cord(){return mY.data();}
+            S getHeight(){return mheight;}
+     
             
 
         private:
             void create();
-            void write_smesh();
+            void write_smesh(const char* filename);
             T mRadius;
             S mHeight;
             u_int mNumber_of_points;
             vector_d mX, mY, mTheta; //vector of points that generate the top and bottom cirle(polygon) of cylinder
             indices mIndex_top, mIndex_bot;
     };
- 
 
+
+    struct tetrahedra_mesh{
+        public:
+            template<typename T, typename S>
+            tetrahedra_mesh(Cylinder<T,S> _obj);
+    };
+
+ template<typename T, typename S>
+tetrahedra_mesh::tetrahedra_mesh(Cylinder<T,S> obj){
+    tetgenio in, out;
+    tetgenio::facet *f;
+    tetgenio::polygon *p;
+    in.firstnumber = 0;
+    in.numberofpoints = 2*obj.mNumber_of_points;
+    for (u_int i = 0; i < obj.mNumber_of_points; i++)
+    {
+        in.pointlist[i] = *obj.x_cord++;
+        in.pointlist[i + 1] = *obj.y_cord++;
+        in.pointlist[i + 2] = obj.getHeight();
+    }
+    for (u_int i = obj.mNumber_of_points; i <  in.numberofpoints; i++)
+    {
+        in.pointlist[i] = *obj.x_cord++;
+        in.pointlist[i + 1] = *obj.y_cord++;
+        in.pointlist[i + 2] = 0;
+    }
+     
+
+}
+
+    
     
 template<typename _T, typename _S>
 void Cylinder<_T,_S>::create(){
@@ -52,8 +93,8 @@ void Cylinder<_T,_S>::create(){
 }
 
 template<typename _T, typename _S>
-void Cylinder<_T,_S>::write_smesh(){
-    std::ofstream ofile("c.smesh"); 
+void Cylinder<_T,_S>::write_smesh(const char* filename){
+    std::ofstream ofile(filename); 
     //WRITE NODES-
     u_int N = 2 * mNumber_of_points;
     ofile << N << " " << 3 <<" " << 0 << " " << 0 <<  std::endl;
