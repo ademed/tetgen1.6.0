@@ -3,18 +3,20 @@
 #include <iomanip>
 #include <fstream>
 #include <cmath>
+#include <utility>
 #include <chrono>
 #include "mesh.hpp"
-#include "tetgen.h"
+//#include "tetgen.h"
 
 
 
 
-int main(int argc, char *argv[]){
-    CYLINDER_OBJECT a(3,5); 
-    //std::cout << a.x_cord()[0] << std::endl;
-    
-        
+int main(){
+    mxcpl::mesh::Cylinder a(3,10,50); 
+    mxcpl::mesh::tetrahedra_mesh M(a);
+
+    //test code for running tetgen library
+    #if 0  
     tetgenio in, out;
     tetgenio::facet *f;
     tetgenio::polygon *p;
@@ -162,38 +164,30 @@ int main(int argc, char *argv[]){
     out.save_nodes("barout");
     out.save_elements("barout");
     out.save_faces("barout"); out.save_neighbors("barout"); 
+    #endif
  
-    
-
-
-
-
-  
-
-
-
-
-
-    // auto refine = 5;
-    // //int  m = refine*(2+10); // write_smesh
-    // int m = refine*2;  //write_smesh2
-    // auto start = std::chrono::high_resolution_clock::now(); 
-    //  CYLINDER_OBJECT c(5.753,15,refine); c.get_smesh();
-    // auto end = std::chrono::high_resolution_clock::now();
-    // std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count() << std::endl;
-    // std::ofstream ofile("c.mtr"); 
-    // ofile << m << " " << 1 <<"\n";
-    // for(std::size_t i = 0; i < m; ++i){
-    //     ofile <<  0.4 << "\n";
-    // }
+    #if 0
+    auto refine = 5;
+    //int  m = refine*(2+10); // write_smesh
+    int m = refine*2;  //write_smesh2
+    auto start = std::chrono::high_resolution_clock::now(); 
+     CYLINDER_OBJECT c(5.753,15,refine); c.get_smesh();
+    auto end = std::chrono::high_resolution_clock::now();
+    std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count() << std::endl;
+    std::ofstream ofile("c.mtr"); 
+    ofile << m << " " << 1 <<"\n";
+    for(std::size_t i = 0; i < m; ++i){
+        ofile <<  0.4 << "\n";
+    }
     
     
-    // int i = 0; /////FINALLY UNDERSTOOD THE IMPLICATIONS OF ++I AND I++
-    // std::vector<int> v = {1,2,3,4,5};
-    // for (size_t j = 0; j < 5; j++)
-    // {
-    //     std::cout << v[i++] << std::endl;
-    // }
+    int i = 0; /////FINALLY UNDERSTOOD THE IMPLICATIONS OF ++I AND I++
+    std::vector<int> v = {1,2,3,4,5};
+    for (size_t j = 0; j < 5; j++)
+    {
+        std::cout << v[i++] << std::endl;
+    }
+    #endif
 }
 
 

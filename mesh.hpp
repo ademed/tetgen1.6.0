@@ -1,4 +1,4 @@
-#pragma once
+
 #ifndef MESH_HPP
 #define MESH_HPP
 #include <vector>
@@ -25,15 +25,18 @@ _MXCPL_MESH_BEGIN
     template<typename T, typename S>
     struct Cylinder{
         public:
-            Cylinder(T _radius, S _height, u_int nPoints = 10): 
+            Cylinder(T _radius, S _height, u_int nPoints = 5): 
                     mRadius(_radius), mHeight(_height), mNumber_of_points(nPoints){create();}
             Cylinder(Cylinder const& rhs): 
                 mRadius(rhs.mRadius), mHeight(rhs.mHeight), mNumber_of_points(rhs.mNumber_of_points){create();}
             void get_smesh(const char* filename){ write_smesh(filename);}
             auto type(){return CYLINDER;}
-            vector_d::pointer x_cord(){return mX.data();}
-            vector_d::pointer y_cord(){return mY.data();}
-            S getHeight(){return mheight;}
+            inline vector_d::pointer x_cord() {return mX.data();}
+            inline vector_d::pointer y_cord() {return mY.data();}
+            inline u_int numPoints() {return mNumber_of_points;}
+            inline S getHeight() {return mHeight;}
+            inline indices::pointer index_top() {return mIndex_top.data();}
+            inline indices::pointer index_bot() {return mIndex_bot.data();}
      
             
 
@@ -51,30 +54,105 @@ _MXCPL_MESH_BEGIN
     struct tetrahedra_mesh{
         public:
             template<typename T, typename S>
-            tetrahedra_mesh(Cylinder<T,S> _obj);
+            tetrahedra_mesh(Cylinder<T,S>& _obj);
     };
 
  template<typename T, typename S>
-tetrahedra_mesh::tetrahedra_mesh(Cylinder<T,S> obj){
+ tetrahedra_mesh::tetrahedra_mesh(Cylinder<T,S>& obj){
     tetgenio in, out;
     tetgenio::facet *f;
     tetgenio::polygon *p;
     in.firstnumber = 0;
-    in.numberofpoints = 2*obj.mNumber_of_points;
-    for (u_int i = 0; i < obj.mNumber_of_points; i++)
+    u_int nPoints = obj.numPoints();
+    in.numberofpoints = 2*nPoints; u_int k = 0;
+    in.pointlist = new REAL[in.numberofpoints * 3];
+    auto ptr_x = obj.x_cord();
+    auto ptr_y = obj.y_cord();
+    for (u_int i = 0; i < nPoints; i++)
     {
-        in.pointlist[i] = *obj.x_cord++;
-        in.pointlist[i + 1] = *obj.y_cord++;
-        in.pointlist[i + 2] = obj.getHeight();
+        in.pointlist[k] = *ptr_x;
+        in.pointlist[k +  3*nPoints] = *ptr_x++;
+        in.pointlist[++k] = *ptr_y;
+        in.pointlist[k +  3*nPoints] = *ptr_y++;
+        in.pointlist[++k] = obj.getHeight();
+        in.pointlist[k + 3*nPoints] = 0.0; k++;
     }
-    for (u_int i = obj.mNumber_of_points; i <  in.numberofpoints; i++)
-    {
-        in.pointlist[i] = *obj.x_cord++;
-        in.pointlist[i + 1] = *obj.y_cord++;
-        in.pointlist[i + 2] = 0;
-    }
-     
 
+    in.numberoffacets = nPoints + 2;
+    in.facetlist = new tetgenio::facet[in.numberoffacets];
+    in.facetmarkerlist = new int[in.numberoffacets]; //no need for markers
+    for (u_int i = 0; i < in.numberoffacets; ++i){
+         in.facetmarkerlist[i] = -1;
+    }
+
+    //top facet of cylinder
+    f = &in.facetlist[0];
+    f->numberofpolygons = 1;
+    f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
+    f->numberofholes = 0;
+    f->holelist = NULL;
+    p = &f->polygonlist[0];
+    p->numberofvertices = nPoints;
+    p->vertexlist = new int[p->numberofvertices];
+    auto ptr_idx_top = obj.index_top();
+    for(u_int i = 0; i < nPoints; ++i){
+        p->vertexlist[i] = *ptr_idx_top++;
+    } 
+
+    //bottom facet of cylinder
+    f = &in.facetlist[1];
+    f->numberofpolygons = 1;
+    f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
+    f->numberofholes = 0;
+    f->holelist = NULL;
+    p = &f->polygonlist[0];
+    p->numberofvertices = nPoints;
+    p->vertexlist = new int[p->numberofvertices];
+    auto ptr_idx_bot = obj.index_bot();
+    for(u_int i = 0; i < nPoints; ++i){
+        p->vertexlist[i] = *ptr_idx_bot++;
+    }
+
+    //rest of the facets but last
+    u_int rm1 = nPoints - 1;
+    for (u_int i = 0; i <  rm1; i++)
+    {
+        f = &in.facetlist[i + 2];
+        f->numberofpolygons = 1;
+        f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
+        f->numberofholes = 0;
+        f->holelist = NULL;
+        p = &f->polygonlist[0];
+        p->numberofvertices = 4;
+        p->vertexlist = new int[p->numberofvertices];
+        p->vertexlist[0] = obj.index_top()[i];
+        p->vertexlist[1] = obj.index_top()[i + 1];
+        p->vertexlist[2] = obj.index_bot()[i + 1];
+        p->vertexlist[3] = obj.index_bot()[i];
+    }
+    
+    //last face
+    f = &in.facetlist[in.numberoffacets - 1];
+    f->numberofpolygons = 1;
+    f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
+    f->numberofholes = 0;
+    f->holelist = NULL;
+    p = &f->polygonlist[0];
+    p->numberofvertices = 4;
+    p->vertexlist = new int[p->numberofvertices];
+    p->vertexlist[0] = obj.index_top()[rm1];
+    p->vertexlist[1] = obj.index_top()[0];
+    p->vertexlist[2] = obj.index_bot()[0];
+    p->vertexlist[3] = obj.index_bot()[rm1];
+
+
+    in.save_nodes("Cin");
+    in.save_poly("Cin");
+    tetgenbehavior b; b.parse_commandline("pq1.414a0.1f"); b.vtkview = 1; //tetgenmesh::outmesh2vtk
+    tetrahedralize(&b, &in, &out); 
+    out.save_nodes("Cout");
+    out.save_elements("Cout");
+    out.save_faces("Cout"); out.save_neighbors("Cout"); 
 }
 
     
