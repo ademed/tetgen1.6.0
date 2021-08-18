@@ -12,8 +12,16 @@
 
 
 int main(){
-    mxcpl::mesh::Cylinder a(3,10,50); 
-    mxcpl::mesh::tetrahedra_mesh M(a);
+    //mxcpl::mesh::Cylinder a(3,10,50); 
+    mxcpl::mesh::Rectangular_Cuboid rec(4,10,1.4);
+    mxcpl::mesh::tetrahedra_mesh M(rec);     
+    M.output("rec");
+    // std::ofstream ofile("cylinder.mtr"); 
+    // ofile << 100 << " " << 1 <<"\n";
+    // for(std::size_t i = 0; i < 100; ++i){
+    //     ofile <<  0.125 << "\n";
+    // }
+    
 
     //test code for running tetgen library
     #if 0  
@@ -177,7 +185,7 @@ int main(){
     std::ofstream ofile("c.mtr"); 
     ofile << m << " " << 1 <<"\n";
     for(std::size_t i = 0; i < m; ++i){
-        ofile <<  0.4 << "\n";
+        ofile <<  0.125 << "\n";
     }
     
     
