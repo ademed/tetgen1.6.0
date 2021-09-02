@@ -6,6 +6,7 @@
 #include <utility>
 #include <chrono>
 #include "mesh.hpp"
+#include <omp.h>
 //#include "tetgen.h"
 
 
@@ -13,9 +14,17 @@
 
 int main(){
     //mxcpl::mesh::Cylinder a(3,10,50); 
-    mxcpl::mesh::Rectangular_Cuboid rec(4,10,1.4);
-    mxcpl::mesh::tetrahedra_mesh M(rec);     
-    M.output("rec");
+
+    // mxcpl::mesh::Rectangular_Cuboid rec(4,10,1.4);
+    // mxcpl::mesh::tetrahedra_mesh M(rec);     
+    // M.output("rec");
+
+    #pragma omp parallel for
+    for(int i = 0; i<4; ++i)
+    {
+        std::cout << "Ahmed" << "\n";   
+    }
+    
     // std::ofstream ofile("cylinder.mtr"); 
     // ofile << 100 << " " << 1 <<"\n";
     // for(std::size_t i = 0; i < 100; ++i){

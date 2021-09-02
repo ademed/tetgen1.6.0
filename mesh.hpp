@@ -31,12 +31,12 @@ _MXCPL_MESH_BEGIN
                 mRadius(rhs.mRadius), mHeight(rhs.mHeight), mNumber_of_points(rhs.mNumber_of_points){create();}
             void get_smesh(const char* filename){ write_smesh(filename);}
             auto type(){return CYLINDER;}
-            inline vector_d::pointer x_cord() {return mX.data();}
-            inline vector_d::pointer y_cord() {return mY.data();}
-            inline u_int numPoints() {return mNumber_of_points;}
-            inline S getHeight() {return mHeight;}
-            inline indices::pointer index_top() {return mIndex_top.data();}
-            inline indices::pointer index_bot() {return mIndex_bot.data();}
+            vector_d::pointer x_cord() {return mX.data();}
+            vector_d::pointer y_cord() {return mY.data();}
+            u_int numPoints() {return mNumber_of_points;}
+            S getHeight() {return mHeight;}
+            indices::pointer index_top() {return mIndex_top.data();}
+            indices::pointer index_bot() {return mIndex_bot.data();}
                
         private:
             void create();
@@ -53,12 +53,12 @@ _MXCPL_MESH_BEGIN
             Rectangular_Cuboid(double _x, double _y, double _z):
                          mWidth(_x), mLength(_y), mHeight(_z){create();}
             auto type(){return RECTANGLE;}
-            inline vector_d::pointer x_cord() {return mX.data();}
-            inline vector_d::pointer y_cord() {return mY.data();}
-            inline u_int numPoints() {return mNumber_of_points;}
-            inline double getHeight() {return mHeight;}
-            inline indices::pointer index_top() {return mIndex_top.data();}
-            inline indices::pointer index_bot() {return mIndex_bot.data();}
+            vector_d::pointer x_cord() {return mX.data();}
+            vector_d::pointer y_cord() {return mY.data();}
+            u_int numPoints() {return mNumber_of_points;}
+            double getHeight() {return mHeight;}
+            indices::pointer index_top() {return mIndex_top.data();}
+            indices::pointer index_bot() {return mIndex_bot.data();}
         private:
             void create();
             double mWidth,mLength,mHeight;
