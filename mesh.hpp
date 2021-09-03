@@ -264,11 +264,19 @@ tetrahedra_mesh::tetrahedra_mesh(Rectangular_Cuboid& obj){
 void tetrahedra_mesh::output(const char* filename){
     in.save_nodes(filename); 
     in.save_poly(filename); 
-    tetgenbehavior b; b.parse_commandline("pq1.0014a0.01m"); b.vtkview = 1; 
+    tetgenbehavior b; b.parse_commandline("pq1.404a0.2fnn"); b.vtkview = 1; 
     tetrahedralize(&b, &in, &out); 
-    out.save_nodes(filename);
+    out.save_nodes(filename); 
     out.save_elements(filename);
     out.save_faces(filename);
+    std::ofstream ofile("connected_cells.txt");
+   
+    for (size_t i = 0; i <  out.numberoftrifaces; i++)
+    {
+        ofile << *out.face2tetlist++ << " " << *out.face2tetlist++ << "\n"; 
+    }
+
+   std::cout <<  "faces: "<< out.numberoftrifaces << "\n" << "tetra: " << out.numberoftetrahedra << std::endl; 
 }
 
  /////////////////////////////////////////////////////////////

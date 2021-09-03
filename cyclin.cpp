@@ -15,15 +15,15 @@
 int main(){
     //mxcpl::mesh::Cylinder a(3,10,50); 
 
-    // mxcpl::mesh::Rectangular_Cuboid rec(4,10,1.4);
-    // mxcpl::mesh::tetrahedra_mesh M(rec);     
-    // M.output("rec");
+    mxcpl::mesh::Rectangular_Cuboid rec(5,10,2);
+    mxcpl::mesh::tetrahedra_mesh M(rec);     
+    M.output("rec");
 
-    #pragma omp parallel for
-    for(int i = 0; i<4; ++i)
-    {
-        std::cout << "Ahmed" << "\n";   
-    }
+    // #pragma omp parallel for
+    // for(int i = 0; i<4; ++i)
+    // {
+    //     std::cout << "Ahmed" << "\n";   
+    // }
     
     // std::ofstream ofile("cylinder.mtr"); 
     // ofile << 100 << " " << 1 <<"\n";
@@ -167,17 +167,17 @@ int main(){
     // Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
     //   do quality mesh generation (q) with a specified quality bound
     //   (1.414), and apply a maximum volume constraint (a0.1).
-    tetgenbehavior b; b.parse_commandline("Qpq1.414a0.1f"); b.vtkview = 1; //tetgenmesh::outmesh2vtk
+    tetgenbehavior b; b.parse_commandline("pq1.414a0.1fnn"); b.vtkview = 1; //tetgenmesh::outmesh2vtk
     tetrahedralize(&b, &in, &out); 
 
-    // Output mesh to files 'barout.node', 'barout.ele' and 'barout.face'.
-    //  std::ofstream ofile("indices.txt");
-    // for (size_t i = 0; i < 4165; i++)
-    // {
-    //     ofile << *out.face2tetlist++ << "\n"; 
+    //Output mesh to files 'barout.node', 'barout.ele' and 'barout.face'.
+     std::ofstream ofile("indices.txt");
+    for (size_t i = 0; i < 4165; i++)
+    {
+        ofile << *out.face2tetlist++ << "\n"; 
 
-    // }
-   // std::cout <<  "faces: "<< out.numberoftrifaces << "\n" << "tetra: " << out.numberoftetrahedra << std::endl; 
+    }
+   std::cout <<  "faces: "<< out.numberoftrifaces << "\n" << "tetra: " << out.numberoftetrahedra << std::endl; 
     out.save_nodes("barout");
     out.save_elements("barout");
     out.save_faces("barout"); out.save_neighbors("barout"); 
