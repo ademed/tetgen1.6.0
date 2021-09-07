@@ -10,14 +10,35 @@
 //#include "tetgen.h"
 
 
+struct Base{
+    public:
+        void print() {std::cout << "value of m is: " << m << std::endl;}
+         Base(int _m):m(_m){};
+    protected:
+       
+        virtual void manipulate_m() {m = 40;};
+        int m;
+};
+struct Derived:public Base{
+    using Base::Base; //enables Base class constructors
+    using Base::manipulate_m;
+     Derived(int _m, int _n):Base(_m), n(_n){};
+    void manipulate_m() override { Base::manipulate_m();}
+
+     private:
+        int n;
+};
+
 
 
 int main(){
-    //mxcpl::mesh::Cylinder a(3,10,50); 
+     mxcpl::mesh::Cylinder a(3,10,50); 
+    //Derived b(2,3); b.manipulate_m(); b.print();
+   // Derived b(3);
 
     mxcpl::mesh::Rectangular_Cuboid rec(12,50,4);
-    mxcpl::mesh::tetrahedra_mesh M(rec);     
-    M.output("rec");
+    mxcpl::mesh::tetrahedra_mesh M(a);     
+    M.output("C_new");
 
     // #pragma omp parallel for
     // for(int i = 0; i<4; ++i)

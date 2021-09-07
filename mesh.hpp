@@ -25,14 +25,13 @@ _MXCPL_MESH_BEGIN
 
     constexpr void linspace(int npoints, double first, double last, vector_d& res);
 
-    struct Cylinder{
+    struct CR_Object{
         public:
-            Cylinder(double _radius, double _height, u_int nPoints = 5): 
-                    mRadius(_radius), mHeight(_height), mNumber_of_points(nPoints){create();}
-            Cylinder(Cylinder const& rhs): 
-                mRadius(rhs.mRadius), mHeight(rhs.mHeight), mNumber_of_points(rhs.mNumber_of_points){create();}
-            void get_smesh(const char* filename){ write_smesh(filename);}
-            auto type(){return CYLINDER;}
+            CR_Object(double _radius, double _height, u_int nPoints = 5):
+                mRadius(_radius), mHeight(_height), mNumber_of_points(nPoints){create(CYLINDER);}
+            CR_Object(double _x, double _y, double _z):
+                         mWidth(_x), mLength(_y), mHeight(_z){create(RECTANGLE);}
+
             vector_d::pointer x_cord() {return mX.data();}
             vector_d::pointer y_cord() {return mY.data();}
             u_int numPoints() {return mNumber_of_points;}
@@ -40,33 +39,64 @@ _MXCPL_MESH_BEGIN
             indices::pointer index_top() {return mIndex_top.data();}
             indices::pointer index_bot() {return mIndex_bot.data();}
                
-        private:
-            void create();
-            void write_smesh(const char* filename);
+        protected:
+            void create(OBJECTS);
             double mRadius;
             double mHeight;
             u_int mNumber_of_points;
-            vector_d mX, mY, mTheta; //vector of points that generate the top and bottom cirle(polygon) of cylinder
+            vector_d mX, mY;//vector of points that generate the top and bottom cirle(polygon) of cylinder
+            vector_d  mTheta; //for cylinder
             indices mIndex_top, mIndex_bot;
+            double mWidth,mLength; // for rectangle
     };
 
-    struct Rectangular_Cuboid{
+    void CR_Object::create(OBJECTS obj){
+        switch (obj)
+        {
+        case (CYLINDER):
+            mTheta.reserve(mNumber_of_points); mX.reserve(mNumber_of_points); mY.reserve(mNumber_of_points);
+            linspace(mNumber_of_points, 0.0, 2*PI<double> - 0.1, mTheta); //populate theta with values btw 0 and 2pi using linear progression
+
+            for(u_int i = 0; i < mNumber_of_points; ++i){
+                mX.push_back(mRadius*cos(mTheta[i]));
+                mY.push_back(mRadius*sin(mTheta[i]));
+                mIndex_top.push_back(i); //store indices of points of top polygon
+                mIndex_bot.push_back(i+mNumber_of_points); //store indices of points of base poiygon
+            }
+            break;
+        case (RECTANGLE):
+            mNumber_of_points = 4;
+            mX.reserve(mNumber_of_points); mY.reserve(mNumber_of_points);
+            mX.push_back(mWidth);  mX.push_back(mWidth); mX.push_back(0); mX.push_back(0); //counter clockwise
+            mY.push_back(0);  mY.push_back(mLength); mY.push_back(mLength); mY.push_back(0); //counter clockwise
+
+            for(u_int i = 0; i < mNumber_of_points; ++i){
+                mIndex_top.push_back(i); //store indices of points of top rectangle
+                mIndex_bot.push_back(i+mNumber_of_points); //store indices of points of base rectangle
+            }
+            break;       
+        default:
+            break;
+        }
+
+    }
+
+    struct Cylinder: public CR_Object{
         public:
-            Rectangular_Cuboid(double _x, double _y, double _z):
-                         mWidth(_x), mLength(_y), mHeight(_z){create();}
-            auto type(){return RECTANGLE;}
-            vector_d::pointer x_cord() {return mX.data();}
-            vector_d::pointer y_cord() {return mY.data();}
-            u_int numPoints() {return mNumber_of_points;}
-            double getHeight() {return mHeight;}
-            indices::pointer index_top() {return mIndex_top.data();}
-            indices::pointer index_bot() {return mIndex_bot.data();}
+            Cylinder(double _radius, double _height, u_int nPoints = 5):CR_Object(_radius, _height, nPoints){}
+            Cylinder(Cylinder const& rhs): CR_Object(rhs.mRadius, rhs.mHeight, rhs.mNumber_of_points){}
+            void get_smesh(const char* filename){ write_smesh(filename);}
+            auto type(){return CYLINDER;}
+        
         private:
-            void create();
-            double mWidth,mLength,mHeight;
-            u_int mNumber_of_points;
-            vector_d mX, mY; //vector of points that generate the top and bottom rectangle
-            indices mIndex_top, mIndex_bot;
+            void write_smesh(const char* filename);
+   
+    };
+
+    struct Rectangular_Cuboid: public CR_Object{
+        public:
+            Rectangular_Cuboid(double _x, double _y, double _z): CR_Object(_x,_y,_z){}
+            auto type(){return RECTANGLE;}
     };
 
 
@@ -194,24 +224,24 @@ void tetrahedra_mesh::output(const char* filename){
    std::cout <<  "faces: "<< out.numberoftrifaces << "\n" << "tetra: " << out.numberoftetrahedra << std::endl; 
 }
 
- /////////////////////////////////////////////////////////////
-//                                                         //                                                    
-//   Cylinder Struct Implementation                        //                                               
-//                                                         //                                                    
-//////////////////////////////////////////////////////////////   
 
-void Cylinder::create(){
-    mTheta.reserve(mNumber_of_points); mX.reserve(mNumber_of_points); mY.reserve(mNumber_of_points);
-    linspace(mNumber_of_points, 0.0, 2*PI<double> - 0.1, mTheta); //populate theta with values btw 0 and 2pi using linear progression
 
-    for(u_int i = 0; i < mNumber_of_points; ++i){
-        mX.push_back(mRadius*cos(mTheta[i]));
-        mY.push_back(mRadius*sin(mTheta[i]));
-        mIndex_top.push_back(i); //store indices of points of top polygon
-        mIndex_bot.push_back(i+mNumber_of_points); //store indices of points of base poiygon
-    }
+
+/////////////////////////////////////////////////////////////
+//                                                          //                                                    
+//     Utilities                                            //                              
+//                                                          //                                                    
+////////////////////////////////////////////////////////////
+constexpr void linspace(int npoints, double first, double last, vector_d& res){
+    double dist = (last - first)/(npoints - 1); //get common difference between terms of arithmetic progression
+    for (u_int i = 0; i < npoints; ++i)
+    {
+        res.push_back(first + i*dist);
+    }   
 }
 
+
+[[deprecated]]
 void Cylinder::write_smesh(const char* filename){
     std::ofstream ofile(filename); 
     //WRITE NODES-
@@ -244,41 +274,6 @@ void Cylinder::write_smesh(const char* filename){
     ofile << 4 << " " << mIndex_top[rm1] << " " << mIndex_top[0] << " " << mIndex_bot[0] << " " <<mIndex_bot[rm1] << "\n"; 
     ofile << 0 << "\n" << 0 << std::endl;
     ofile.close(); //redundant!!! destructor automatically closes ofstream
-}
-
-
- /////////////////////////////////////////////////////////////
-//                                                         //                                                    
-//   Rectangular cuboid Struct Implementation              //                                               
-//                                                         //                                                    
-////////////////////////////////////////////////////////////// 
-
-void Rectangular_Cuboid::create(){
-    mNumber_of_points = 4;
-    mX.reserve(mNumber_of_points); mY.reserve(mNumber_of_points);
-    mX.push_back(mWidth);  mX.push_back(mWidth); mX.push_back(0); mX.push_back(0); //counter clockwise
-    mY.push_back(0);  mY.push_back(mLength); mY.push_back(mLength); mY.push_back(0); //counter clockwise
-
-    for(u_int i = 0; i < mNumber_of_points; ++i){
-        mIndex_top.push_back(i); //store indices of points of top rectangle
-        mIndex_bot.push_back(i+mNumber_of_points); //store indices of points of base rectangle
-    }
-}
- 
-
-
-
-/////////////////////////////////////////////////////////////
-//                                                          //                                                    
-//     Utilities                                            //                              
-//                                                          //                                                    
-////////////////////////////////////////////////////////////
-constexpr void linspace(int npoints, double first, double last, vector_d& res){
-    double dist = (last - first)/(npoints - 1); //get common difference between terms of arithmetic progression
-    for (u_int i = 0; i < npoints; ++i)
-    {
-        res.push_back(first + i*dist);
-    }   
 }
 
 _MXCPL_MESH_END
