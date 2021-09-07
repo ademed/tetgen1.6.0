@@ -15,7 +15,7 @@
 int main(){
     //mxcpl::mesh::Cylinder a(3,10,50); 
 
-    mxcpl::mesh::Rectangular_Cuboid rec(5,10,2);
+    mxcpl::mesh::Rectangular_Cuboid rec(12,50,4);
     mxcpl::mesh::tetrahedra_mesh M(rec);     
     M.output("rec");
 
