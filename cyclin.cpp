@@ -6,14 +6,52 @@
 #include <utility>
 #include <chrono>
 #include "mesh.hpp"
+#include <omp.h>
 //#include "tetgen.h"
 
+
+struct Base{
+    public:
+        void print() {std::cout << "value of m is: " << m << std::endl;}
+         Base(int _m):m(_m){};
+    protected:
+       
+        virtual void manipulate_m() {m = 40;};
+        int m;
+};
+struct Derived:public Base{
+    using Base::Base; //enables Base class constructors
+    using Base::manipulate_m;
+     Derived(int _m, int _n):Base(_m), n(_n){};
+    void manipulate_m() override { Base::manipulate_m();}
+
+     private:
+        int n;
+};
 
 
 
 int main(){
-    mxcpl::mesh::Cylinder a(3,10,50); 
-    mxcpl::mesh::tetrahedra_mesh M(a);
+     mxcpl::mesh::Cylinder a(3,10,50); 
+    //Derived b(2,3); b.manipulate_m(); b.print();
+   // Derived b(3);
+
+    mxcpl::mesh::Rectangular_Cuboid rec(12,50,4);
+    mxcpl::mesh::tetrahedra_mesh M(a);     
+    M.output("C_new");
+
+    // #pragma omp parallel for
+    // for(int i = 0; i<4; ++i)
+    // {
+    //     std::cout << "Ahmed" << "\n";   
+    // }
+    
+    // std::ofstream ofile("cylinder.mtr"); 
+    // ofile << 100 << " " << 1 <<"\n";
+    // for(std::size_t i = 0; i < 100; ++i){
+    //     ofile <<  0.125 << "\n";
+    // }
+    
 
     //test code for running tetgen library
     #if 0  
@@ -150,17 +188,17 @@ int main(){
     // Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
     //   do quality mesh generation (q) with a specified quality bound
     //   (1.414), and apply a maximum volume constraint (a0.1).
-    tetgenbehavior b; b.parse_commandline("Qpq1.414a0.1f"); b.vtkview = 1; //tetgenmesh::outmesh2vtk
+    tetgenbehavior b; b.parse_commandline("pq1.414a0.1fnn"); b.vtkview = 1; //tetgenmesh::outmesh2vtk
     tetrahedralize(&b, &in, &out); 
 
-    // Output mesh to files 'barout.node', 'barout.ele' and 'barout.face'.
-    //  std::ofstream ofile("indices.txt");
-    // for (size_t i = 0; i < 4165; i++)
-    // {
-    //     ofile << *out.face2tetlist++ << "\n"; 
+    //Output mesh to files 'barout.node', 'barout.ele' and 'barout.face'.
+     std::ofstream ofile("indices.txt");
+    for (size_t i = 0; i < 4165; i++)
+    {
+        ofile << *out.face2tetlist++ << "\n"; 
 
-    // }
-   // std::cout <<  "faces: "<< out.numberoftrifaces << "\n" << "tetra: " << out.numberoftetrahedra << std::endl; 
+    }
+   std::cout <<  "faces: "<< out.numberoftrifaces << "\n" << "tetra: " << out.numberoftetrahedra << std::endl; 
     out.save_nodes("barout");
     out.save_elements("barout");
     out.save_faces("barout"); out.save_neighbors("barout"); 
@@ -177,7 +215,7 @@ int main(){
     std::ofstream ofile("c.mtr"); 
     ofile << m << " " << 1 <<"\n";
     for(std::size_t i = 0; i < m; ++i){
-        ofile <<  0.4 << "\n";
+        ofile <<  0.125 << "\n";
     }
     
     
