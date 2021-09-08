@@ -32,13 +32,15 @@ struct Derived:public Base{
 
 
 int main(){
-     mxcpl::mesh::Cylinder a(3,10,50); 
+    
     //Derived b(2,3); b.manipulate_m(); b.print();
    // Derived b(3);
-
-    mxcpl::mesh::Rectangular_Cuboid rec(12,50,4);
-    mxcpl::mesh::tetrahedra_mesh M(a);     
-    M.output("C_new");
+    CYLINDER_OBJECT cyl(3,4,100); 
+    mxcpl::mesh::tetrahedra_mesh M1(cyl);     
+    M1.output("cyl");
+    RECTANGLE_OBJECT rec(12,50,7);
+    mxcpl::mesh::tetrahedra_mesh M2(rec);  
+    M2.output("rec");
 
     // #pragma omp parallel for
     // for(int i = 0; i<4; ++i)
@@ -52,7 +54,6 @@ int main(){
     //     ofile <<  0.125 << "\n";
     // }
     
-
     //test code for running tetgen library
     #if 0  
     tetgenio in, out;

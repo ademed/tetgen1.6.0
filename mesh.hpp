@@ -32,11 +32,11 @@ _MXCPL_MESH_BEGIN
             CR_Object(double _x, double _y, double _z):
                          mWidth(_x), mLength(_y), mHeight(_z){create(RECTANGLE);}
 
-            vector_d::pointer x_cord() {return mX.data();}
+            vector_d::pointer x_cord()  {return mX.data();}
             vector_d::pointer y_cord() {return mY.data();}
             u_int numPoints() {return mNumber_of_points;}
             double getHeight() {return mHeight;}
-            indices::pointer index_top() {return mIndex_top.data();}
+            indices::pointer index_top()  {return mIndex_top.data();}
             indices::pointer index_bot() {return mIndex_bot.data();}
                
         protected:
@@ -85,7 +85,7 @@ _MXCPL_MESH_BEGIN
         public:
             Cylinder(double _radius, double _height, u_int nPoints = 5):CR_Object(_radius, _height, nPoints){}
             Cylinder(Cylinder const& rhs): CR_Object(rhs.mRadius, rhs.mHeight, rhs.mNumber_of_points){}
-            void get_smesh(const char* filename){ write_smesh(filename);}
+            [[deprecated("use the output() method from mesher")]] void get_smesh(const char* filename){ write_smesh(filename);}
             auto type(){return CYLINDER;}
         
         private:
@@ -96,6 +96,7 @@ _MXCPL_MESH_BEGIN
     struct Rectangular_Cuboid: public CR_Object{
         public:
             Rectangular_Cuboid(double _x, double _y, double _z): CR_Object(_x,_y,_z){}
+            Rectangular_Cuboid(Rectangular_Cuboid const& rhs): CR_Object(rhs.mWidth, rhs.mLength, rhs.mHeight){}
             auto type(){return RECTANGLE;}
     };
 

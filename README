@@ -22,3 +22,6 @@ BEFORE INTALLING OR USING TetGen(R) READ the
 GENERAL LICENSE TERMS AND CONDITIONS
 
 -------------------------------------------------------------------
+
+
+ g++ -std=c++17 -g cyclin.cpp -o test -L./ -ltet 
